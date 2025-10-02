@@ -1,0 +1,2 @@
+[libraries]
+plugin-git-hooks = { module = "org.danilopianini:gradle-pre-commit-git-hooks", version = "2.1.2" }
