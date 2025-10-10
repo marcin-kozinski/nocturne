@@ -4,4 +4,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "build-logic"
 
+include(":conventions")
+
 include(":settings")
