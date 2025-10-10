@@ -2,6 +2,12 @@ name: Set up environment
 description: Common environment setup steps for this repository
 
 inputs:
+  jdk:
+    description: Set up JDK
+    default: 'false'
+  gradle:
+    description: Set up Gradle
+    default: 'false'
   brew:
     description: Set up Homebrew
     default: 'false'
@@ -14,6 +20,17 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Set up JDK
+      if: ${{ inputs.jdk == 'true' || inputs.gradle == 'true' }}
+      uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+      with:
+        java-version-file: '.java-version'
+        distribution: 'temurin'
+        # Using 'temurin' speeds up the job, because this distribution is cached by the runner.
+        # See: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Hosted-Tool-Cache
+    - name: Set up Gradle
+      if: ${{ inputs.gradle == 'true' }}
+      uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
     - name: Set up Homebrew
       if: ${{ inputs.brew == 'true' || inputs.ktfmt == 'true' }}
       run: ./.github/actions/setup-environment/setup-homebrew.sh
