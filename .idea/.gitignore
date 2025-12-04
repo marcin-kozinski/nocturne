@@ -1,0 +1,8 @@
+# Hide everything in this directory by default.
+*
+
+# Keep some exceptions.
+!.gitignore
+!ktfmt.xml
+!codeStyles
+!codeStyles/*

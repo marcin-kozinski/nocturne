@@ -8,6 +8,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - name: Set up environment
+        uses: ./.github/actions/setup-environment
+        with:
+          gradle: true
+          hardware-acceleration: true
+      - name: Build app
+        run: ./scripts/build-app.sh
+      - name: Run unit tests
+        run: ./scripts/run-unit-tests.sh
+      - name: Run UI tests
+        run: ./scripts/run-ui-tests.sh
+      - name: Run Android Lint
+        run: ./scripts/run-android-lint.sh
+
   check-code-format:
     runs-on: ubuntu-24.04
     steps:

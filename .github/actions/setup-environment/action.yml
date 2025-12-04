@@ -16,6 +16,9 @@ inputs:
   ktfmt:
     description: Set up ktfmt
     default: 'false'
+  hardware-acceleration:
+    description: Enable hardware acceleration needed to run for example an Android emulator
+    default: 'false'
 
 runs:
   using: composite
@@ -38,4 +41,11 @@ runs:
     - name: Set up ktfmt
       if: ${{ inputs.ktfmt == 'true' }}
       run: brew install ktfmt
+      shell: bash
+    - name: Enable KVM group perms
+      if: ${{ inputs.hardware-acceleration == 'true' }}
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
       shell: bash
