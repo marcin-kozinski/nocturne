@@ -1,3 +1,22 @@
+[versions]
+androidx-activity = "1.12.1"
+androidx-compose-ui = "1.10.0"
+kotlin = "2.2.21"
+
 [libraries]
+androidx-activity = { module = "androidx.activity:activity", version.ref = "androidx-activity" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
+androidx-compose-foundation = { module = "androidx.compose.foundation:foundation", version = "1.10.0" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3", version = "1.4.0" }
+androidx-compose-runtime = { module = "androidx.compose.runtime:runtime", version = "1.10.0" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "androidx-compose-ui" }
+androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "androidx-compose-ui" }
+androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-compose-ui" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "androidx-compose-ui" }
+androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "androidx-compose-ui" }
+junit = { module = "junit:junit", version = "4.13.2" }
+plugin-android = { module = "com.android.tools.build:gradle", version = "8.13.1" }
+plugin-compose-compiler = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 plugin-dependency-analysis = { module = "com.autonomousapps:dependency-analysis-gradle-plugin", version = "3.5.1" }
 plugin-git-hooks = { module = "org.danilopianini:gradle-pre-commit-git-hooks", version = "2.1.2" }
+plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
