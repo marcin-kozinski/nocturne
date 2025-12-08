@@ -11,6 +11,7 @@ dependencyAnalysis {
         }
         bundle("androidx-compose-ui") {
             primary("androidx.compose.ui:ui")
+            includeDependency("androidx.compose.ui:ui-unit")
             includeDependency("androidx.compose.ui:ui-text")
         }
         bundle("androidx-compose-ui-test") {

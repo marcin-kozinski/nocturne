@@ -4,44 +4,66 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import dev.kozinski.nocturne.ui.theme.NocturneTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { NocturneTheme { SettingsScreen(SettingsViewModel("Android")) } }
+        setContent { NocturneTheme { SettingsScreen(SettingsViewModel()) } }
     }
 }
 
-data class SettingsViewModel(val name: String)
+class SettingsViewModel {
+    var calendarEnabled by mutableStateOf(false)
+}
 
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) {
-    SettingsScreen(viewModel.name, modifier)
+    SettingsScreen(
+        calendarEnabled = viewModel.calendarEnabled,
+        onCalendarEnabledChange = { viewModel.calendarEnabled = it },
+        modifier = modifier,
+    )
 }
 
 @Composable
-fun SettingsScreen(name: String, modifier: Modifier = Modifier) {
+fun SettingsScreen(
+    calendarEnabled: Boolean,
+    onCalendarEnabledChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
-        Greeting(name = name, modifier = Modifier.padding(innerPadding))
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(innerPadding).padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(text = stringResource(R.string.enable_calendar))
+            Switch(checked = calendarEnabled, onCheckedChange = onCalendarEnabledChange)
+        }
     }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(text = "Hello $name!", modifier = modifier)
 }
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    NocturneTheme { SettingsScreen("Android") }
+fun SettingsScreenPreview() {
+    NocturneTheme { SettingsScreen(calendarEnabled = false, onCalendarEnabledChange = {}) }
 }

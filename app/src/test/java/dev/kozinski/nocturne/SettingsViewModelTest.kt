@@ -5,9 +5,11 @@ import org.junit.Test
 
 class SettingsViewModelTest {
     @Test
-    fun `returns expected name`() {
-        val name = "Android"
-        val viewModel = SettingsViewModel(name)
-        assertEquals(name, viewModel.name)
+    fun `keeps calendar enabled value`() {
+        val viewModel = SettingsViewModel()
+        assertEquals(false, viewModel.calendarEnabled)
+
+        viewModel.calendarEnabled = true
+        assertEquals(true, viewModel.calendarEnabled)
     }
 }
