@@ -1,5 +1,6 @@
 package dev.kozinski.nocturne
 
+import android.Manifest
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertIsDisplayed
@@ -11,13 +12,21 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
+import androidx.test.rule.GrantPermissionRule
 import dev.kozinski.nocturne.ui.theme.NocturneTheme
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 class SettingsScreenTest {
-    @get:Rule val compose = createComposeRule()
+    @get:Rule(order = 0)
+    val grantPermissions: GrantPermissionRule =
+        GrantPermissionRule.grant(
+            Manifest.permission.READ_CALENDAR,
+            Manifest.permission.WRITE_CALENDAR,
+        )
+
+    @get:Rule(order = 1) val compose = createComposeRule()
 
     @Before
     fun before() {
