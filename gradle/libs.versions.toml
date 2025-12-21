@@ -1,5 +1,5 @@
 [versions]
-androidx-activity = "1.12.1"
+androidx-activity = "1.12.2"
 androidx-compose-ui = "1.10.0"
 kotlin = "2.3.0"
 
