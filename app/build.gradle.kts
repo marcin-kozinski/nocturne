@@ -21,6 +21,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.kotlin.test)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugRuntimeOnly(libs.androidx.compose.ui.test.manifest)
     implementation(libs.androidx.activity)
@@ -30,6 +31,8 @@ dependencies {
     implementation(libs.androidx.compose.runtime)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.core)
-    testImplementation(libs.junit)
+    testCompileOnly(libs.junit)
+    testImplementation(libs.kotlin.test)
 }

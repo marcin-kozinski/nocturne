@@ -18,6 +18,7 @@ dependencyAnalysis {
             primary("androidx.compose.ui:ui-test-junit4")
             includeDependency("androidx.compose.ui:ui-test")
         }
+        ignoreKtx(true)
     }
     reporting { printBuildHealth(true) }
 }
