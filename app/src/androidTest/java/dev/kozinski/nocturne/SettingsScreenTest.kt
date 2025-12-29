@@ -18,6 +18,8 @@ import dev.kozinski.nocturne.ui.theme.NocturneTheme
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import org.junit.Rule
 
 private class FakeViewModel : SettingsViewModel {
@@ -33,7 +35,9 @@ private class FakeViewModel : SettingsViewModel {
     override val calendarEnabled: Boolean
         get() = calendarEnabledState.value
 
-    override fun setCalendarEnabled(value: Boolean, calendarPermissionsGranted: Boolean) {
+    override val events: SharedFlow<SettingsEvent> = MutableSharedFlow()
+
+    override suspend fun setCalendarEnabled(value: Boolean, calendarPermissionsGranted: Boolean) {
         setCalendarEnabledCount++
         if (updatesAllowed) {
             calendarEnabledState.value = value

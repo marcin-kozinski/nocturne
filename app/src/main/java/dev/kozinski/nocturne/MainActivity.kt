@@ -19,7 +19,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -28,30 +28,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import dev.kozinski.nocturne.ui.theme.NocturneTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent { NocturneTheme { SettingsScreen(PlainSettingsViewModel()) } }
-    }
-}
-
-interface SettingsViewModel {
-    val calendarEnabled: Boolean
-
-    fun setCalendarEnabled(value: Boolean, calendarPermissionsGranted: Boolean)
-}
-
-class PlainSettingsViewModel : SettingsViewModel {
-    private val calendarEnabledState = mutableStateOf(false)
-    override val calendarEnabled
-        get() = calendarEnabledState.value
-
-    override fun setCalendarEnabled(value: Boolean, calendarPermissionsGranted: Boolean) {
-        if (calendarPermissionsGranted) {
-            calendarEnabledState.value = value
-        }
     }
 }
 
@@ -64,17 +47,29 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
             // ignore for now
         }
 
-    LaunchedEffect(Unit) {
-        permissionLauncher.launch(
-            arrayOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
-        )
+    LaunchedEffect(viewModel.events) {
+        viewModel.events.collect { event ->
+            when (event) {
+                SettingsEvent.RequestCalendarPermissions -> {
+                    permissionLauncher.launch(
+                        arrayOf(
+                            Manifest.permission.READ_CALENDAR,
+                            Manifest.permission.WRITE_CALENDAR,
+                        )
+                    )
+                }
+            }
+        }
     }
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     SettingsScreen(
         calendarEnabled = viewModel.calendarEnabled,
         onCalendarEnabledChange = {
-            viewModel.setCalendarEnabled(it, context.checkCalendarPermissionsGranted())
+            scope.launch {
+                viewModel.setCalendarEnabled(it, context.checkCalendarPermissionsGranted())
+            }
         },
         modifier = modifier,
     )
