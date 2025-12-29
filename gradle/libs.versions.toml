@@ -26,4 +26,4 @@ plugin-compose-compiler = { module = "org.jetbrains.kotlin:compose-compiler-grad
 plugin-dependency-analysis = { module = "com.autonomousapps:dependency-analysis-gradle-plugin", version = "3.5.1" }
 plugin-git-hooks = { module = "org.danilopianini:gradle-pre-commit-git-hooks", version = "2.1.6" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-turbine = { module = "app.cash.turbine:turbine", version = "1.2.0" }
+turbine = { module = "app.cash.turbine:turbine", version = "1.2.1" }
