@@ -35,4 +35,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     testCompileOnly(libs.junit)
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
 }
