@@ -1,7 +1,6 @@
 package dev.kozinski.nocturne
 
 import android.Manifest
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.assertIsDisplayed
@@ -14,40 +13,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onSiblings
 import androidx.compose.ui.test.performClick
 import androidx.test.rule.GrantPermissionRule
-import dev.kozinski.nocturne.ui.theme.NocturneTheme
-import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
+import kotlin.test.assertTrue
+import kotlin.test.fail
 import org.junit.Rule
-
-private class FakeViewModel : SettingsViewModel {
-    private val calendarEnabledState = mutableStateOf(false)
-
-    private var setCalendarEnabledCount = 0
-    private var updatesAllowed = true
-
-    fun disableUpdates() {
-        updatesAllowed = false
-    }
-
-    override val calendarEnabled: Boolean
-        get() = calendarEnabledState.value
-
-    override val events: SharedFlow<SettingsEvent> = MutableSharedFlow()
-
-    override suspend fun setCalendarEnabled(value: Boolean, calendarPermissionsGranted: Boolean) {
-        setCalendarEnabledCount++
-        if (updatesAllowed) {
-            calendarEnabledState.value = value
-        }
-    }
-
-    fun assertSetterUnused() {
-        assertEquals(0, setCalendarEnabledCount)
-    }
-}
 
 class SettingsScreenTest {
     // Skip the system permissions popup.
@@ -60,35 +29,41 @@ class SettingsScreenTest {
 
     @get:Rule(order = 1) val compose = createComposeRule()
 
-    private val viewModel = FakeViewModel()
-
-    @BeforeTest
-    fun before() {
-        compose.setContent { NocturneTheme { SettingsScreen(viewModel) } }
-    }
-
     @Test
     fun `calendar enabled label is displayed`() {
+        compose.setContent {
+            SettingsScreen(calendarEnabled = false, onCalendarEnabledChange = { fail() })
+        }
         compose.onCalendarEnabledLabel().assertIsDisplayed()
-        viewModel.assertSetterUnused()
     }
 
     @Test
-    fun `calendar enabled toggle is displayed`() {
-        compose.onCalendarEnabledToggle().assertIsDisplayed()
-        viewModel.assertSetterUnused()
+    fun `calendar enabled toggle is off when calendar is disabled`() {
+        compose.setContent {
+            SettingsScreen(calendarEnabled = false, onCalendarEnabledChange = { fail() })
+        }
+        compose.onCalendarEnabledToggle().assertIsDisplayed().assertIsOff()
     }
 
     @Test
-    fun `calendar enabled toggle turns on when clicked`() {
-        compose.onCalendarEnabledToggle().assertIsOff().performClick().assertIsOn()
+    fun `calendar enabled toggle is on when calendar is enabled`() {
+        compose.setContent {
+            SettingsScreen(calendarEnabled = true, onCalendarEnabledChange = { fail() })
+        }
+        compose.onCalendarEnabledToggle().assertIsDisplayed().assertIsOn()
     }
 
     @Test
-    fun `calendar enabled toggle stays off if view model does not update`() {
-        viewModel.disableUpdates()
-
-        compose.onCalendarEnabledToggle().assertIsOff().performClick().assertIsOff()
+    fun `onCalendarEnabledChange is called when calendar enabled toggle is clicked`() {
+        var onCalendarEnabledChangeCalled = false
+        compose.setContent {
+            SettingsScreen(
+                calendarEnabled = false,
+                onCalendarEnabledChange = { onCalendarEnabledChangeCalled = true },
+            )
+        }
+        compose.onCalendarEnabledToggle().performClick()
+        assertTrue(onCalendarEnabledChangeCalled)
     }
 
     private fun SemanticsNodeInteractionsProvider.onCalendarEnabledLabel():
