@@ -66,9 +66,14 @@ fun SettingsScreen(viewModel: SettingsViewModel, modifier: Modifier = Modifier) 
     val scope = rememberCoroutineScope()
     SettingsScreen(
         calendarEnabled = viewModel.calendarEnabled,
-        onCalendarEnabledChange = {
+        onCalendarEnabledChange = { enabled ->
             scope.launch {
-                viewModel.setCalendarEnabled(it, context.checkCalendarPermissionsGranted())
+                val permissionsGranted = context.checkCalendarPermissionsGranted()
+                if (enabled) {
+                    viewModel.onEnableCalendarClicked(permissionsGranted)
+                } else {
+                    viewModel.onDisableCalendarClicked(permissionsGranted)
+                }
             }
         },
         modifier = modifier,

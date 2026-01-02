@@ -8,7 +8,9 @@ interface SettingsViewModel {
     val calendarEnabled: Boolean
     val events: SharedFlow<SettingsEvent>
 
-    suspend fun setCalendarEnabled(value: Boolean, calendarPermissionsGranted: Boolean)
+    suspend fun onEnableCalendarClicked(calendarPermissionsGranted: Boolean)
+
+    suspend fun onDisableCalendarClicked(calendarPermissionsGranted: Boolean)
 }
 
 sealed interface SettingsEvent {
@@ -24,7 +26,15 @@ class PlainSettingsViewModel : SettingsViewModel {
     override val events: SharedFlow<SettingsEvent>
         get() = _events
 
-    override suspend fun setCalendarEnabled(value: Boolean, calendarPermissionsGranted: Boolean) {
+    override suspend fun onEnableCalendarClicked(calendarPermissionsGranted: Boolean) {
+        setCalendarEnabled(true, calendarPermissionsGranted)
+    }
+
+    override suspend fun onDisableCalendarClicked(calendarPermissionsGranted: Boolean) {
+        setCalendarEnabled(false, calendarPermissionsGranted)
+    }
+
+    private suspend fun setCalendarEnabled(value: Boolean, calendarPermissionsGranted: Boolean) {
         if (calendarPermissionsGranted) {
             calendarEnabledState.value = value
         } else {
