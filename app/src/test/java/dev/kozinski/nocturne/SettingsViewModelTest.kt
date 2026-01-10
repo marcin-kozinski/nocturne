@@ -1,5 +1,8 @@
 package dev.kozinski.nocturne
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.mutableStateOf
 import app.cash.turbine.test
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -8,7 +11,7 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
 class SettingsViewModelTest {
-    private val viewModel = PlainSettingsViewModel()
+    private val viewModel = PlainSettingsViewModel(FakeCalendarRepository())
 
     @Test
     fun `by default calendar is disabled`() {
@@ -46,6 +49,28 @@ class SettingsViewModelTest {
         viewModel.events.test {
             viewModel.onEnableCalendarClicked(calendarPermissionsGranted = false)
             assertEquals(SettingsEvent.RequestCalendarPermissions, awaitItem())
+        }
+    }
+}
+
+class FakeCalendarRepository : CalendarRepository {
+    private val calendarId = mutableStateOf<Long?>(null)
+    override val calendarExists: State<Boolean> = derivedStateOf { calendarId.value != null }
+
+    override fun createCalendar(): Boolean {
+        if (calendarId.value == null) {
+            val newId = System.currentTimeMillis()
+            calendarId.value = newId
+        }
+        return true
+    }
+
+    override fun deleteCalendar(): Boolean {
+        return if (calendarId.value != null) {
+            calendarId.value = null
+            true
+        } else {
+            false
         }
     }
 }

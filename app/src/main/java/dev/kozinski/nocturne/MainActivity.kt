@@ -34,7 +34,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { NocturneTheme { SettingsScreen(PlainSettingsViewModel()) } }
+        val viewModel =
+            PlainSettingsViewModel(
+                ContentResolverCalendarRepository(applicationContext.contentResolver)
+            )
+        setContent { NocturneTheme { SettingsScreen(viewModel) } }
     }
 }
 

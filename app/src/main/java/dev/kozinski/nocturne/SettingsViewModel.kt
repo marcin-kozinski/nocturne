@@ -1,6 +1,5 @@
 package dev.kozinski.nocturne
 
-import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 
@@ -17,26 +16,26 @@ sealed interface SettingsEvent {
     data object RequestCalendarPermissions : SettingsEvent
 }
 
-class PlainSettingsViewModel : SettingsViewModel {
-    private val calendarEnabledState = mutableStateOf(false)
+class PlainSettingsViewModel(private val calendarRepository: CalendarRepository) :
+    SettingsViewModel {
     override val calendarEnabled
-        get() = calendarEnabledState.value
+        get() = calendarRepository.calendarExists.value
 
     private val _events = MutableSharedFlow<SettingsEvent>()
     override val events: SharedFlow<SettingsEvent>
         get() = _events
 
     override suspend fun onEnableCalendarClicked(calendarPermissionsGranted: Boolean) {
-        setCalendarEnabled(true, calendarPermissionsGranted)
+        if (calendarPermissionsGranted) {
+            calendarRepository.createCalendar()
+        } else {
+            _events.emit(SettingsEvent.RequestCalendarPermissions)
+        }
     }
 
     override suspend fun onDisableCalendarClicked(calendarPermissionsGranted: Boolean) {
-        setCalendarEnabled(false, calendarPermissionsGranted)
-    }
-
-    private suspend fun setCalendarEnabled(value: Boolean, calendarPermissionsGranted: Boolean) {
         if (calendarPermissionsGranted) {
-            calendarEnabledState.value = value
+            calendarRepository.deleteCalendar()
         } else {
             _events.emit(SettingsEvent.RequestCalendarPermissions)
         }
