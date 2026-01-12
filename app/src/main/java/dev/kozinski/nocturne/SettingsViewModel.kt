@@ -1,5 +1,6 @@
 package dev.kozinski.nocturne
 
+import kotlin.time.Duration.Companion.hours
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 
@@ -27,7 +28,17 @@ class PlainSettingsViewModel(private val calendarRepository: CalendarRepository)
 
     override suspend fun onEnableCalendarClicked(calendarPermissionsGranted: Boolean) {
         if (calendarPermissionsGranted) {
-            calendarRepository.createCalendar()
+            if (calendarRepository.createCalendar()) {
+                val now = kotlin.time.Clock.System.now()
+                calendarRepository.addEvent(
+                    Event(
+                        title = "Nocturne Calendar Created",
+                        start = now,
+                        end = now + 1.hours,
+                        timeZone = java.util.TimeZone.getDefault(),
+                    )
+                )
+            }
         } else {
             _events.emit(SettingsEvent.RequestCalendarPermissions)
         }

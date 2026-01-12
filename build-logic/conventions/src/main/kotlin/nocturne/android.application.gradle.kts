@@ -29,7 +29,10 @@ androidComponents {
 }
 
 kotlin {
-    compilerOptions { allWarningsAsErrors = true }
+    compilerOptions {
+        allWarningsAsErrors = true
+        freeCompilerArgs.add("-Xexplicit-backing-fields")
+    }
     jvmToolchain(21)
 }
 

@@ -9,14 +9,19 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import java.util.TimeZone
+import kotlin.time.Instant
 
 interface CalendarRepository {
     val calendarExists: State<Boolean>
 
     fun createCalendar(): Boolean
 
+    fun addEvent(event: Event)
+
     fun deleteCalendar(): Boolean
 }
+
+data class Event(val title: String, val start: Instant, val end: Instant, val timeZone: TimeZone)
 
 class ContentResolverCalendarRepository(private val contentResolver: ContentResolver) :
     CalendarRepository {
@@ -60,23 +65,6 @@ class ContentResolverCalendarRepository(private val contentResolver: ContentReso
             val newId = uri?.lastPathSegment?.toLongOrNull()
             if (newId != null) {
                 calendarId.value = newId
-
-                // Add dummy event to make calendar visible in Calendar app
-                val now = System.currentTimeMillis()
-                val eventValues =
-                    ContentValues().apply {
-                        put(CalendarContract.Events.CALENDAR_ID, newId)
-                        put(CalendarContract.Events.TITLE, "Nocturne Calendar Created")
-                        put(
-                            CalendarContract.Events.DESCRIPTION,
-                            "This calendar was created by Nocturne",
-                        )
-                        put(CalendarContract.Events.DTSTART, now)
-                        put(CalendarContract.Events.DTEND, now + 60 * 60 * 1000) // +1 hour
-                        put(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().id)
-                    }
-                contentResolver.insert(CalendarContract.Events.CONTENT_URI, eventValues)
-
                 true
             } else {
                 false
@@ -86,6 +74,23 @@ class ContentResolverCalendarRepository(private val contentResolver: ContentReso
         } catch (_: Exception) {
             false
         }
+    }
+
+    override fun addEvent(event: Event) {
+        val id =
+            calendarId.value
+                ?: throw IllegalStateException("Cannot add event: calendar does not exist")
+
+        val eventValues =
+            ContentValues().apply {
+                put(CalendarContract.Events.CALENDAR_ID, id)
+                put(CalendarContract.Events.TITLE, event.title)
+                put(CalendarContract.Events.DTSTART, event.start.toEpochMilliseconds())
+                put(CalendarContract.Events.DTEND, event.end.toEpochMilliseconds())
+                put(CalendarContract.Events.EVENT_TIMEZONE, event.timeZone.id)
+            }
+
+        contentResolver.insert(CalendarContract.Events.CONTENT_URI, eventValues)
     }
 
     override fun deleteCalendar(): Boolean {
