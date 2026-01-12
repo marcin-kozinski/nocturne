@@ -1,7 +1,6 @@
 package dev.kozinski.nocturne
 
 import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import app.cash.turbine.test
 import kotlin.test.Test
@@ -11,7 +10,8 @@ import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
 class SettingsViewModelTest {
-    private val viewModel = PlainSettingsViewModel(FakeCalendarRepository())
+    private val calendarRepository = FakeCalendarRepository()
+    private val viewModel = PlainSettingsViewModel(calendarRepository)
 
     @Test
     fun `by default calendar is disabled`() {
@@ -22,6 +22,12 @@ class SettingsViewModelTest {
     fun `allows enabling calendar when permissions granted`() = runTest {
         viewModel.onEnableCalendarClicked(calendarPermissionsGranted = true)
         assertTrue(viewModel.calendarEnabled)
+    }
+
+    @Test
+    fun `adds an event when enabling calendar`() = runTest {
+        viewModel.onEnableCalendarClicked(calendarPermissionsGranted = true)
+        calendarRepository.assertAtLeastOneEventAdded()
     }
 
     @Test
@@ -54,23 +60,29 @@ class SettingsViewModelTest {
 }
 
 class FakeCalendarRepository : CalendarRepository {
-    private val calendarId = mutableStateOf<Long?>(null)
-    override val calendarExists: State<Boolean> = derivedStateOf { calendarId.value != null }
+    private val events = mutableListOf<Event>()
+    final override val calendarExists: State<Boolean>
+        field = mutableStateOf(false)
 
     override fun createCalendar(): Boolean {
-        if (calendarId.value == null) {
-            val newId = System.currentTimeMillis()
-            calendarId.value = newId
+        if (!calendarExists.value) {
+            calendarExists.value = true
         }
         return true
     }
 
+    override fun addEvent(event: Event) {
+        events += event
+    }
+
     override fun deleteCalendar(): Boolean {
-        return if (calendarId.value != null) {
-            calendarId.value = null
+        return if (calendarExists.value) {
+            calendarExists.value = false
             true
         } else {
             false
         }
     }
+
+    fun assertAtLeastOneEventAdded() = assertTrue(events.isNotEmpty())
 }
