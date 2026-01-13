@@ -33,6 +33,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.skylight)
+    implementation(libs.skylight.calculator)
     testCompileOnly(libs.junit)
     testImplementation(libs.kotlin.test)
     testImplementation(libs.kotlinx.coroutines.test)
