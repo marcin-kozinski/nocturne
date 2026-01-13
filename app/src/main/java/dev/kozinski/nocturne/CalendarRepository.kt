@@ -21,7 +21,12 @@ interface CalendarRepository {
     fun deleteCalendar(): Boolean
 }
 
-data class Event(val title: String, val start: Instant, val end: Instant, val timeZone: TimeZone)
+data class Event(
+    val title: String,
+    val start: Instant,
+    val end: Instant,
+    val timeZone: TimeZone = TimeZone.getDefault(),
+)
 
 class ContentResolverCalendarRepository(private val contentResolver: ContentResolver) :
     CalendarRepository {
