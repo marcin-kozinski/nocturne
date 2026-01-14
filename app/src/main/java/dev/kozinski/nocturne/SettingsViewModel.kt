@@ -4,7 +4,8 @@ import dev.drewhamilton.skylight.Coordinates
 import dev.drewhamilton.skylight.SkylightDay
 import dev.drewhamilton.skylight.calculator.CalculatorSkylight
 import java.time.LocalDate
-import kotlin.time.Duration.Companion.minutes
+import java.time.ZoneId
+import kotlin.time.Instant
 import kotlin.time.toKotlinInstant
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -34,23 +35,57 @@ class PlainSettingsViewModel(private val calendarRepository: CalendarRepository)
     override suspend fun onEnableCalendarClicked(calendarPermissionsGranted: Boolean) {
         if (calendarPermissionsGranted) {
             if (calendarRepository.createCalendar()) {
-                // Calculate sunset for Bialystok
+                // Calculate nighttime period for Bialystok
                 val skylight = CalculatorSkylight()
                 val coordinates = Coordinates(latitude = 53.13528, longitude = 23.14556)
                 val today = LocalDate.now()
 
-                val sunsetTime =
-                    when (val skylightDay = skylight.getSkylightDay(coordinates, today)) {
-                        is SkylightDay.Eventful -> {
-                            skylightDay.sunset?.toKotlinInstant()
+                val startTime: Instant? =
+                    when (val todaySkylightDay = skylight.getSkylightDay(coordinates, today)) {
+                        is SkylightDay.AlwaysDaytime -> {
+                            // Don't create event.
+                            null
                         }
-                        else -> null
+
+                        is SkylightDay.NeverLight -> {
+                            today.atStartOfDay(ZoneId.systemDefault()).toInstant().toKotlinInstant()
+                        }
+                        is SkylightDay.Eventful -> {
+                            // Intentionally null if no sunset, doesn't create event.
+                            todaySkylightDay.sunset?.toKotlinInstant()
+                        }
                     }
 
-                if (sunsetTime != null) {
+                // Search for next sunrise.
+                var endTime: Instant? = null
+                if (startTime != null) {
+                    val maxDaysToSearch = 365
 
+                    for (i in 0..maxDaysToSearch) {
+                        val searchDate = today.plusDays(i.toLong())
+                        when (val skylightDay = skylight.getSkylightDay(coordinates, searchDate)) {
+                            is SkylightDay.AlwaysDaytime,
+                            is SkylightDay.NeverLight -> {
+                                // Continue searching.
+                            }
+                            is SkylightDay.Eventful -> {
+                                val sunrise = skylightDay.sunrise?.toKotlinInstant()
+                                if (sunrise == null) {
+                                    // Continue searching.
+                                } else if (sunrise <= startTime) {
+                                    // Continue searching.
+                                } else {
+                                    endTime = sunrise
+                                    break
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (startTime != null && endTime != null) {
                     calendarRepository.addEvent(
-                        Event(title = "Sunset", start = sunsetTime, end = sunsetTime + 1.minutes)
+                        Event(title = "Dark", start = startTime, end = endTime)
                     )
                 }
             }
