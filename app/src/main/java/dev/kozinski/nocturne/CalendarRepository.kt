@@ -171,6 +171,6 @@ class ContentResolverCalendarRepository(private val contentResolver: ContentReso
     companion object {
         private const val CALENDAR_NAME = "Nocturne"
         private const val ACCOUNT_NAME = "Nocturne"
-        private const val ACCOUNT_TYPE = "dev.kozinski.nocturne"
+        private const val ACCOUNT_TYPE = CalendarContract.ACCOUNT_TYPE_LOCAL
     }
 }
