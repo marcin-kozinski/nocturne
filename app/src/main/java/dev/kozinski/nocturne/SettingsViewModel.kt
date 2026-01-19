@@ -3,10 +3,10 @@ package dev.kozinski.nocturne
 import dev.drewhamilton.skylight.Coordinates
 import dev.drewhamilton.skylight.SkylightDay
 import dev.drewhamilton.skylight.calculator.CalculatorSkylight
+import java.time.Instant
 import java.time.LocalDate
+import java.time.Period
 import java.time.ZoneId
-import kotlin.time.Instant
-import kotlin.time.toKotlinInstant
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 
@@ -38,55 +38,73 @@ class PlainSettingsViewModel(private val calendarRepository: CalendarRepository)
                 // Calculate nighttime period for Bialystok
                 val skylight = CalculatorSkylight()
                 val coordinates = Coordinates(latitude = 53.13528, longitude = 23.14556)
-                val today = LocalDate.now()
+                var currentDay = LocalDate.now()
+                val lastDay = currentDay.plusDays(180)
 
-                val startTime: Instant? =
-                    when (val todaySkylightDay = skylight.getSkylightDay(coordinates, today)) {
-                        is SkylightDay.AlwaysDaytime -> {
-                            // Don't create event.
-                            null
-                        }
-
-                        is SkylightDay.NeverLight -> {
-                            today.atStartOfDay(ZoneId.systemDefault()).toInstant().toKotlinInstant()
-                        }
-                        is SkylightDay.Eventful -> {
-                            // Intentionally null if no sunset, doesn't create event.
-                            todaySkylightDay.sunset?.toKotlinInstant()
-                        }
-                    }
-
-                // Search for next sunrise.
-                var endTime: Instant? = null
-                if (startTime != null) {
-                    val maxDaysToSearch = 365
-
-                    for (i in 0..maxDaysToSearch) {
-                        val searchDate = today.plusDays(i.toLong())
-                        when (val skylightDay = skylight.getSkylightDay(coordinates, searchDate)) {
-                            is SkylightDay.AlwaysDaytime,
-                            is SkylightDay.NeverLight -> {
+                while (currentDay <= lastDay) {
+                    // Search for sunset as start time
+                    var startTime: Instant? = null
+                    while (startTime == null && currentDay <= lastDay) {
+                        when (val skylightDay = skylight.getSkylightDay(coordinates, currentDay)) {
+                            is SkylightDay.AlwaysDaytime -> {
                                 // Continue searching.
+                                currentDay += Period.ofDays(1)
                             }
+
+                            is SkylightDay.NeverLight -> {
+                                startTime =
+                                    currentDay.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                            }
+
                             is SkylightDay.Eventful -> {
-                                val sunrise = skylightDay.sunrise?.toKotlinInstant()
-                                if (sunrise == null) {
-                                    // Continue searching.
-                                } else if (sunrise <= startTime) {
-                                    // Continue searching.
+                                val sunset = skylightDay.sunset
+                                if (sunset != null) {
+                                    startTime = sunset
                                 } else {
-                                    endTime = sunrise
-                                    break
+                                    // Continue searching.
+                                    currentDay += Period.ofDays(1)
                                 }
                             }
                         }
                     }
-                }
 
-                if (startTime != null && endTime != null) {
-                    calendarRepository.addEvent(
-                        Event(title = "Dark", start = startTime, end = endTime)
-                    )
+                    // Search for next sunrise, starting from the date of the start time.
+                    var endTime: Instant? = null
+                    if (startTime != null) {
+                        while (endTime == null && currentDay <= lastDay) {
+                            when (
+                                val skylightDay = skylight.getSkylightDay(coordinates, currentDay)
+                            ) {
+                                is SkylightDay.AlwaysDaytime,
+                                is SkylightDay.NeverLight -> {
+                                    // Continue searching.
+                                    currentDay += Period.ofDays(1)
+                                }
+
+                                is SkylightDay.Eventful -> {
+                                    val sunrise = skylightDay.sunrise
+                                    if (sunrise == null) {
+                                        // Continue searching.
+                                        currentDay += Period.ofDays(1)
+                                    } else if (sunrise <= startTime) {
+                                        // Continue searching.
+                                        currentDay += Period.ofDays(1)
+                                    } else {
+                                        endTime = sunrise
+                                    }
+                                }
+                            }
+                        }
+
+                        // Fallback: if no sunrise found, use end of last searched day
+                        if (endTime == null) {
+                            endTime = currentDay.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                        }
+
+                        calendarRepository.addEvent(
+                            Event(title = "Dark", start = startTime, end = endTime)
+                        )
+                    }
                 }
             }
         } else {

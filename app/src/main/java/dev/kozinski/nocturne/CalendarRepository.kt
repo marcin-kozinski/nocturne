@@ -8,8 +8,8 @@ import android.provider.CalendarContract
 import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import java.time.Instant
 import java.util.TimeZone
-import kotlin.time.Instant
 
 interface CalendarRepository {
     val calendarExists: State<Boolean>
@@ -90,8 +90,8 @@ class ContentResolverCalendarRepository(private val contentResolver: ContentReso
             ContentValues().apply {
                 put(CalendarContract.Events.CALENDAR_ID, id)
                 put(CalendarContract.Events.TITLE, event.title)
-                put(CalendarContract.Events.DTSTART, event.start.toEpochMilliseconds())
-                put(CalendarContract.Events.DTEND, event.end.toEpochMilliseconds())
+                put(CalendarContract.Events.DTSTART, event.start.toEpochMilli())
+                put(CalendarContract.Events.DTEND, event.end.toEpochMilli())
                 put(CalendarContract.Events.EVENT_TIMEZONE, event.timeZone.id)
             }
 
