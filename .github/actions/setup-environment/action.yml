@@ -8,14 +8,6 @@ inputs:
   gradle:
     description: Set up Gradle
     default: 'false'
-  brew:
-    description: Set up Homebrew
-    default: 'false'
-    # Only some runners need this, for example see:
-    # https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#homebrew-note
-  ktfmt:
-    description: Set up ktfmt
-    default: 'false'
   hardware-acceleration:
     description: Enable hardware acceleration needed to run for example an Android emulator
     default: 'false'
@@ -34,14 +26,6 @@ runs:
     - name: Set up Gradle
       if: ${{ inputs.gradle == 'true' }}
       uses: gradle/actions/setup-gradle@4d9f0ba0025fe599b4ebab900eb7f3a1d93ef4c2 # v5.0.0
-    - name: Set up Homebrew
-      if: ${{ inputs.brew == 'true' || inputs.ktfmt == 'true' }}
-      run: ./.github/actions/setup-environment/setup-homebrew.sh
-      shell: bash
-    - name: Set up ktfmt
-      if: ${{ inputs.ktfmt == 'true' }}
-      run: brew install ktfmt
-      shell: bash
     - name: Enable KVM group perms
       if: ${{ inputs.hardware-acceleration == 'true' }}
       run: |
