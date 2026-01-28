@@ -1,16 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if ! command -v ktfmt &> /dev/null; then
-  echo "Error: ktfmt is not installed."
-  echo "Install it with: brew install ktfmt"
-  exit 1
-fi
+staged=()
+while IFS= read -r -d '' file; do
+  staged+=("$file")
+done < <(git diff --cached --diff-filter=ACMRT --name-only -z)
 
-if ! command -v kotlin &> /dev/null; then
-  echo "Error: kotlin is not installed."
-  echo "Install it with: brew install kotlin"
-  exit 1
+if [[ ${#staged[@]} -gt 0 ]]; then
+  ./scripts/check-code-format.sh --fix "${staged[@]}"
 fi
-
-./scripts/check-code-format.sh --fix
