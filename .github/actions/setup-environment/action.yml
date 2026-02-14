@@ -26,6 +26,10 @@ runs:
     - name: Set up Gradle
       if: ${{ inputs.gradle == 'true' }}
       uses: gradle/actions/setup-gradle@f29f5a9d7b09a7c6b29859002d29d24e1674c884 # v5.0.1
+    - name: Configure Gradle JVM memory
+      if: ${{ inputs.gradle == 'true' }}
+      run: echo "GRADLE_OPTS=-Xmx3g -XX:MaxMetaspaceSize=512m" >> $GITHUB_ENV
+      shell: bash
     - name: Enable KVM group perms
       if: ${{ inputs.hardware-acceleration == 'true' }}
       run: |
