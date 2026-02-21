@@ -11,27 +11,28 @@ import kotlinx.coroutines.test.runTest
 
 class SettingsViewModelTest {
     private val calendarRepository = FakeCalendarRepository()
-    private val viewModel = PlainSettingsViewModel(calendarRepository)
 
     @Test
     fun `by default calendar is disabled`() {
-        assertFalse(viewModel.calendarEnabled)
+        assertFalse(viewModel().calendarEnabled)
     }
 
     @Test
     fun `allows enabling calendar when permissions granted`() = runTest {
+        val viewModel = viewModel()
         viewModel.onEnableCalendarClicked(calendarPermissionsGranted = true)
         assertTrue(viewModel.calendarEnabled)
     }
 
     @Test
     fun `adds an event when enabling calendar`() = runTest {
-        viewModel.onEnableCalendarClicked(calendarPermissionsGranted = true)
+        viewModel().onEnableCalendarClicked(calendarPermissionsGranted = true)
         calendarRepository.assertAtLeastOneEventAdded()
     }
 
     @Test
     fun `allows disabling calendar when permissions granted`() = runTest {
+        val viewModel = viewModel()
         viewModel.onEnableCalendarClicked(calendarPermissionsGranted = true)
         viewModel.onDisableCalendarClicked(calendarPermissionsGranted = true)
         assertFalse(viewModel.calendarEnabled)
@@ -39,12 +40,14 @@ class SettingsViewModelTest {
 
     @Test
     fun `doesn't allow enabling calendar when permissions denied`() = runTest {
+        val viewModel = viewModel()
         viewModel.onEnableCalendarClicked(calendarPermissionsGranted = false)
         assertFalse(viewModel.calendarEnabled)
     }
 
     @Test
     fun `doesn't allow disabling calendar if permissions were revoked`() = runTest {
+        val viewModel = viewModel()
         viewModel.onEnableCalendarClicked(calendarPermissionsGranted = true)
         viewModel.onDisableCalendarClicked(calendarPermissionsGranted = false)
         assertTrue(viewModel.calendarEnabled)
@@ -52,11 +55,35 @@ class SettingsViewModelTest {
 
     @Test
     fun `emits permission request event when permissions not granted`() = runTest {
+        val viewModel = viewModel()
         viewModel.events.test {
             viewModel.onEnableCalendarClicked(calendarPermissionsGranted = false)
             assertEquals(SettingsEvent.RequestCalendarPermissions, awaitItem())
         }
     }
+
+    @Test
+    fun `schedules refresh when enabling calendar`() = runTest {
+        var refreshScheduled = false
+        viewModel(scheduleRefresh = { refreshScheduled = true })
+            .onEnableCalendarClicked(calendarPermissionsGranted = true)
+
+        assertTrue(refreshScheduled)
+    }
+
+    @Test
+    fun `cancels refresh when disabling calendar`() = runTest {
+        var refreshCancelled = false
+        val viewModel = viewModel(cancelRefresh = { refreshCancelled = true })
+
+        viewModel.onEnableCalendarClicked(calendarPermissionsGranted = true)
+        viewModel.onDisableCalendarClicked(calendarPermissionsGranted = true)
+
+        assertTrue(refreshCancelled)
+    }
+
+    private fun viewModel(scheduleRefresh: () -> Unit = {}, cancelRefresh: () -> Unit = {}) =
+        PlainSettingsViewModel(calendarRepository, scheduleRefresh, cancelRefresh)
 }
 
 class FakeCalendarRepository : CalendarRepository {
@@ -73,6 +100,10 @@ class FakeCalendarRepository : CalendarRepository {
 
     override fun addEvent(event: Event) {
         events += event
+    }
+
+    override fun clearEvents() {
+        events.clear()
     }
 
     override fun deleteCalendar(): Boolean {
