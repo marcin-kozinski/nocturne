@@ -27,16 +27,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import dev.kozinski.nocturne.ui.theme.NocturneTheme
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val workManager = WorkManager.getInstance(applicationContext)
         val viewModel =
             PlainSettingsViewModel(
-                ContentResolverCalendarRepository(applicationContext.contentResolver)
+                calendarRepository =
+                    ContentResolverCalendarRepository(applicationContext.contentResolver),
+                scheduleRefresh = {
+                    workManager.enqueueUniquePeriodicWork(
+                        WORK_NAME_REFRESH_CALENDAR,
+                        ExistingPeriodicWorkPolicy.KEEP,
+                        PeriodicWorkRequestBuilder<RefreshCalendarEventsWorker>(1, TimeUnit.DAYS)
+                            .build(),
+                    )
+                },
+                cancelRefresh = { workManager.cancelUniqueWork(WORK_NAME_REFRESH_CALENDAR) },
             )
         setContent { NocturneTheme { SettingsScreen(viewModel) } }
     }
@@ -107,6 +122,8 @@ fun SettingsScreen(
 fun SettingsScreenPreview() {
     NocturneTheme { SettingsScreen(calendarEnabled = false, onCalendarEnabledChange = {}) }
 }
+
+private const val WORK_NAME_REFRESH_CALENDAR = "refresh_calendar_events"
 
 private fun Context.checkCalendarPermissionsGranted(): Boolean {
     return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALENDAR) ==
