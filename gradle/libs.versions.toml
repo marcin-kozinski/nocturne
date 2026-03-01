@@ -21,7 +21,7 @@ junit = { module = "junit:junit", version = "4.13.2" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
-plugin-android = { module = "com.android.tools.build:gradle", version = "8.13.2" }
+plugin-android = { module = "com.android.tools.build:gradle", version = "9.0.1" }
 plugin-compose-compiler = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
 plugin-dependency-analysis = { module = "com.autonomousapps:dependency-analysis-gradle-plugin", version = "3.6.1" }
 plugin-git-hooks = { module = "org.danilopianini:gradle-pre-commit-git-hooks", version = "2.1.9" }
