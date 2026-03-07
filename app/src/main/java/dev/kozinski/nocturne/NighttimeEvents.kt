@@ -19,7 +19,7 @@ suspend fun calculateNighttimeEvents(
     val lastDay = from.plusDays(days.toLong())
 
     while (currentDay < lastDay) {
-        // Search for sunset as start time
+        // Search for dusk as start time
         var startTime: Instant? = null
         while (startTime == null && currentDay < lastDay) {
             when (val skylightDay = skylight.getSkylightDay(coordinates, currentDay)) {
@@ -33,9 +33,9 @@ suspend fun calculateNighttimeEvents(
                 }
 
                 is SkylightDay.Eventful -> {
-                    val sunset = skylightDay.sunset
-                    if (sunset != null) {
-                        startTime = sunset
+                    val dusk = skylightDay.dusk
+                    if (dusk != null) {
+                        startTime = dusk
                     } else {
                         // Continue searching.
                         currentDay += Period.ofDays(1)
@@ -44,7 +44,7 @@ suspend fun calculateNighttimeEvents(
             }
         }
 
-        // Search for next sunrise, starting from the date of the start time.
+        // Search for next dawn, starting from the date of the start time.
         var endTime: Instant? = null
         if (startTime != null) {
             while (endTime == null && currentDay <= lastDay) {
@@ -56,21 +56,21 @@ suspend fun calculateNighttimeEvents(
                     }
 
                     is SkylightDay.Eventful -> {
-                        val sunrise = skylightDay.sunrise
-                        if (sunrise == null) {
+                        val dawn = skylightDay.dawn
+                        if (dawn == null) {
                             // Continue searching.
                             currentDay += Period.ofDays(1)
-                        } else if (sunrise <= startTime) {
+                        } else if (dawn <= startTime) {
                             // Continue searching.
                             currentDay += Period.ofDays(1)
                         } else {
-                            endTime = sunrise
+                            endTime = dawn
                         }
                     }
                 }
             }
 
-            // Fallback: if no sunrise found, use end of last searched day
+            // Fallback: if no dawn found, use end of last searched day
             if (endTime == null) {
                 endTime = currentDay.atStartOfDay(ZoneId.systemDefault()).toInstant()
             }
