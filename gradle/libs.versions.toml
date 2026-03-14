@@ -1,6 +1,6 @@
 [versions]
 androidx-activity = "1.13.0"
-androidx-compose-ui = "1.10.4"
+androidx-compose-ui = "1.10.5"
 kotlin = "2.3.10"
 kotlinx-coroutines = "1.10.2"
 
