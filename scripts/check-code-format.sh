@@ -16,7 +16,7 @@ ensure_kotlin_installed() {
   fi
 }
 
-ktfmt_args=(--kotlinlang-style)
+ktfmt_args=(--kotlinlang-style --quiet)
 ktfmt_files=()
 versions_toml_fmt_files=()
 
