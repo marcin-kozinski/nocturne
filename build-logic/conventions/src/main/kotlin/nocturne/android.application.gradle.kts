@@ -5,7 +5,6 @@ import com.android.build.api.variant.HostTestBuilder
 plugins {
     id("com.autonomousapps.dependency-analysis")
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
