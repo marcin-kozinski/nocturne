@@ -22,6 +22,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.junit)
     androidTestImplementation(libs.kotlin.test)
+    androidTestImplementation(libs.kotlin.test.junit)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugRuntimeOnly(libs.androidx.compose.ui.test.manifest)
     implementation(libs.androidx.activity)
@@ -38,6 +39,7 @@ dependencies {
     implementation(libs.skylight.calculator)
     testCompileOnly(libs.junit)
     testImplementation(libs.kotlin.test)
+    testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.turbine)
 }
