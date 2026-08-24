@@ -27,9 +27,8 @@ class PlainSettingsViewModel(
     override val calendarEnabled
         get() = calendarRepository.calendarExists.value
 
-    private val _events = MutableSharedFlow<SettingsEvent>()
     override val events: SharedFlow<SettingsEvent>
-        get() = _events
+        field = MutableSharedFlow<SettingsEvent>()
 
     override suspend fun onEnableCalendarClicked(calendarPermissionsGranted: Boolean) {
         if (calendarPermissionsGranted) {
@@ -41,7 +40,7 @@ class PlainSettingsViewModel(
                 scheduleRefresh()
             }
         } else {
-            _events.emit(SettingsEvent.RequestCalendarPermissions)
+            events.emit(SettingsEvent.RequestCalendarPermissions)
         }
     }
 
@@ -50,7 +49,7 @@ class PlainSettingsViewModel(
             calendarRepository.deleteCalendar()
             cancelRefresh()
         } else {
-            _events.emit(SettingsEvent.RequestCalendarPermissions)
+            events.emit(SettingsEvent.RequestCalendarPermissions)
         }
     }
 }

@@ -88,7 +88,7 @@ class SettingsViewModelTest {
 
 class FakeCalendarRepository : CalendarRepository {
     private val events = mutableListOf<Event>()
-    final override val calendarExists: State<Boolean>
+    override val calendarExists: State<Boolean>
         field = mutableStateOf(false)
 
     override fun createCalendar(): Boolean {
